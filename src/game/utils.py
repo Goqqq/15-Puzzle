@@ -31,9 +31,10 @@ def write_matrix(state: State) -> str:
     return build_matrix_string(state)
 
 
-def measure_time(func, *args, **kwargs):
+def measure_time(func, *args, **kwargs) -> str:
     start_time = time.time()
     result = func(*args, **kwargs)
     end_time = time.time()
-    print(f"Time taken by {func.__name__}: {end_time - start_time:.2f} seconds")
-    return result
+    time_taken: str = f"{end_time - start_time:.2f}"
+    # print(f"Time taken by {func.__name__}: {end_time - start_time:.2f} seconds")
+    return result, time_taken

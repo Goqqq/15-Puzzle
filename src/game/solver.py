@@ -62,7 +62,6 @@ class Solver:
         if not self.is_solvable():
             print("The puzzle is not solvable.")
             return None
-        print("The puzzle is solvable.")
 
         queue: Deque[Tuple[List[List[int]], List[List[int]]]] = deque(
             [(self.start_state, [])]

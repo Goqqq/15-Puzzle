@@ -28,7 +28,7 @@ def main():
     # create_welcome_window(root)
 
     puzzle: Puzzle = Puzzle(9)
-    puzzle.start(3)
+    puzzle.start(10)
 
 
 if __name__ == "__main__":
