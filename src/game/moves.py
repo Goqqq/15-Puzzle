@@ -11,13 +11,12 @@ class MovesEnum(Enum):
 
 
 class Moves:
-    def __init__(self):
-        self.moves = {
-            "up": MovesEnum.UP,
-            "down": MovesEnum.DOWN,
-            "left": MovesEnum.LEFT,
-            "right": MovesEnum.RIGHT,
-        }
+    moves_dict = {
+        "up": MovesEnum.UP,
+        "down": MovesEnum.DOWN,
+        "left": MovesEnum.LEFT,
+        "right": MovesEnum.RIGHT,
+    }
 
 
 # def move_up(self, state: List[Tile], blank_index: int) -> List[Tile]:
