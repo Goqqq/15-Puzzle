@@ -3,7 +3,7 @@ import copy
 from itertools import chain
 import math
 import random
-from typing import List, Tuple, Optional, Set, Deque
+from typing import List, Tuple, Optional, Set, Deque, Union
 from game import utils
 from game.tiles import Tile
 from game.state import State
@@ -15,57 +15,28 @@ if TYPE_CHECKING:
 
 
 class Solver:
-    def __init__(self, start_state: State, state_id: int, puzzle_instance: "Puzzle"):
+    def __init__(
+        self,
+        start_state: State,
+        state_id: int,
+        puzzle_instance: "Puzzle",
+        col_count: int,
+        row_count: int,
+        goal_state: State,
+    ):
         self.start_state: State = start_state
         self.state_id: int = state_id
-        self.board_size: int = int(math.sqrt(len(start_state.state)))
-        self.goal_state: State = State.state_to_tuple(
-            State(State.generate_goal_state(self.board_size))
-        )
+        self.board_width: int = col_count
         self.puzzle_instance: Puzzle = puzzle_instance
-        self.blank_tile: int = 0  # Assuming '0' represents the blank/empty tile
+        self.goal_state: State = State.state_to_tuple(goal_state)
+        self.blank_tile_value: Union[int, str] = Tile.get_blank_tile_value(
+            self.puzzle_instance.tile_mode
+        )
         self.visited: Set[Tuple[Tuple[int, ...], ...]] = set()
-        self.__moves = {"up": (-1, 0), "down": (1, 0), "left": (0, -1), "right": (0, 1)}
         self.prev_state: str = None
 
-    def is_solvable(self) -> bool:
-        # Flatten the list and remove the blank tile
-        # flat_puzzle: List[int] = list(chain(*self.start_state))
-        # flat_puzzle.remove(self.blank_tile)
-        flat_puzzle = [tile.val for tile in self.start_state.state if tile.val != 0]
-
-        inversions: int = 0
-        for i in range(len(flat_puzzle)):
-            for j in range(i + 1, len(flat_puzzle)):
-                if flat_puzzle[i] > flat_puzzle[j]:
-                    inversions += 1
-
-        # For odd-sized boards, the number of inversions must be even
-        if self.board_size % 2 != 0:
-            return inversions % 2 == 0
-
-        # For boards with an even width, we need to also check the row of the blank tile
-        else:
-            blank_row: int = next(
-                row
-                for row, tiles in enumerate(self.start_state)
-                if self.blank_tile in tiles
-            )
-            blank_row_from_bottom: int = self.board_size - blank_row
-            if blank_row_from_bottom % 2 == 0:  # Blank on even row from bottom
-                return inversions % 2 != 0
-            else:  # Blank on odd row from bottom
-                return inversions % 2 == 0
-
     def solve(self) -> Optional[List[List[int]]]:
-        # todo: delete
-        if not self.is_solvable():
-            print("The puzzle is not solvable.")
-            return None
-
-        queue: Deque[Tuple[List[List[int]], List[List[int]]]] = deque(
-            [(self.start_state, [])]
-        )  # todo: check if this is the correct type
+        queue: Deque[Tuple[State, List[str]]] = deque([(self.start_state, [])])
         while queue:
             current_state, path = queue.popleft()
             state_to_compare = current_state.state_to_tuple()
@@ -77,7 +48,7 @@ class Solver:
             self.visited.add(
                 current_state.state_to_tuple()
             )  # Add the current state to the visited set
-            for neighbor, move in current_state.get_neighbors(self.board_size):
+            for neighbor, move in current_state.get_neighbors(self.board_width):
                 neighbor_tuple = neighbor.state_to_tuple()
                 if neighbor_tuple != self.prev_state:
                     if neighbor_tuple not in self.visited:
@@ -98,7 +69,7 @@ class Solver:
                 row, col = next(
                     (tile.row, tile.col)
                     for tile in solved_state.state
-                    if tile.val == Tile.blank_tile
+                    if tile.val == self.blank_tile_value
                 )
                 new_row, new_col = (
                     row + Moves.moves_dict[move].value[0],

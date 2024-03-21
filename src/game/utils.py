@@ -31,7 +31,7 @@ def write_matrix(state: State) -> str:
     return build_matrix_string(state)
 
 
-def measure_time(func, *args, **kwargs) -> str:
+def measure_time(func, *args, **kwargs) -> tuple:
     start_time = time.time()
     result = func(*args, **kwargs)
     end_time = time.time()

@@ -1,19 +1,31 @@
 from itertools import permutations
 import math
 import random
-from game.tiles import Tile
-from typing import List, Tuple
+from string import ascii_uppercase
+from game.tiles import Tile, TileMode, RepeatMode
+from typing import List, Tuple, Union
 from game.moves import Moves
 
 
 class State:
-    def __init__(self, tiles: List[Tile]):
+    def __init__(
+        self,
+        tiles: List[Tile],
+        tile_mode: TileMode = TileMode.NUMBERS,
+        repeat_mode: RepeatMode = RepeatMode.UNIQUE,
+    ):
         self.moves: Moves = Moves()
         self.state: List[Tile] = tiles
+        self.tile_mode = tile_mode
+        self.repeat_mode = repeat_mode
 
     def get_blank_tile_index(self) -> int:
         return self.state.index(
-            next(tile for tile in self.state if tile.val == Tile.blank_tile)
+            next(
+                tile
+                for tile in self.state
+                if tile.val == Tile.get_blank_tile_value(self.tile_mode)
+            )
         )
 
     def get_target_tile_index(self, row: int, col: int) -> int:
@@ -41,7 +53,7 @@ class State:
         inversions: int = 0
         for i in range(len(state)):
             for j in range(i + 1, len(state)):
-                if state[i] > state[j]:
+                if state[i].scale_value > state[j].scale_value:
                     inversions += 1
 
         # For odd-sized boards, the number of inversions must be even
@@ -57,27 +69,54 @@ class State:
                 return inversions % 2 == 0
 
     @staticmethod
-    def generate_all_states(size: int) -> List[List[Tile]]:
-        side_length: int = int(math.sqrt(size))
+    def generate_all_states(
+        col_count: int, row_count: int, tile_mode: TileMode, repeat_mode: RepeatMode
+    ) -> Tuple[List[List[Tile]], List[Tile]]:
         all_states: List[State] = []
-        # Generate all permutations of the numbers 0 to 8
-        for perm in permutations(range(size)):
+        size: int = col_count * row_count
+        blank_tile_value: Union[int, str] = Tile.get_blank_tile_value(tile_mode)
+        # Define tiles based on the tile mode
+        if tile_mode == TileMode.NUMBERS:
+            tiles = list(range(1, size)) + [blank_tile_value]
+        elif tile_mode == TileMode.LETTERS:
+            tiles = list(ascii_uppercase)[: size - 1] + [blank_tile_value]
+        else:  # tile_mode == TileMode.MIXED
+            tiles = (
+                list(range(1, size // 2))
+                + list(ascii_uppercase)[: size // 2 - 1]
+                + [blank_tile_value]
+            )
+
+        # Generate solved state
+        solved_state = []
+        for i, value in enumerate(tiles):
+            row, col = divmod(i, col_count)
+            scale_value = i + 1
+            solved_state.append(Tile(value, row, col, scale_value))
+        solved_state = State(solved_state, tile_mode, repeat_mode)
+        scale_values = {tile.val: tile.scale_value for tile in solved_state.state}
+        # Generate all states
+        for perm in permutations(tiles):
             state = []
+            blank_row = None
             state_to_check = []
-            blank_row: int
-            for i in range(size):
-                # Calculate the row and col of the tile
-                row, col = divmod(i, side_length)
-                # Create a new Tile and add it to the state
-                state.append(Tile(perm[i], row, col))
-                if perm[i] != 0:
-                    state_to_check.append(perm[i])
+            for i, value in enumerate(perm):
+                row, col = divmod(i, col_count)
+                tile = Tile(
+                    value,
+                    row,
+                    col,
+                    scale_values[value],
+                )
+                state.append(tile)
+                if tile.val != blank_tile_value:
+                    state_to_check.append(tile)
                 else:
-                    blank_row = row
-            # Add the state to the list of all states
-            if State.state_is_solvable(state_to_check, blank_row, side_length):
-                all_states.append(State(state))
-        return all_states
+                    blank_row = tile.row
+            if State.state_is_solvable(state_to_check, blank_row, col_count):
+                all_states.append(State(state, tile_mode, repeat_mode))
+
+        return all_states, solved_state
 
     def is_goal_state(self, state: List[Tile]) -> bool:
         return all(
@@ -135,8 +174,9 @@ class State:
 
         return state
 
+    # deprecated
     @staticmethod
-    def generate_goal_state(side_length: int) -> List[Tile]:
+    def generate_goal_state(side_length: int) -> "State":
         return [
             Tile(
                 0 if i == j == side_length - 1 else side_length * i + j + 1,
@@ -147,11 +187,49 @@ class State:
             for j in range(side_length)
         ]
 
-    def state_to_tuple(self) -> Tuple[Tuple[int, int, int], ...]:
-        return tuple((tile.val, tile.row, tile.col) for tile in self.state)
+    # deprecated
+    @staticmethod
+    def generate_solved_state(
+        row_count: int, col_count: int, tile_mode: TileMode, repeat_mode: RepeatMode
+    ) -> "State":
+        tiles_count: int = row_count * col_count
+        state = []
+        if tile_mode == TileMode.NUMBERS:
+            tiles = list(range(1, tiles_count))  # Start from 1, excluding 0
+        elif tile_mode == TileMode.LETTERS:
+            tiles = list(ascii_uppercase)[: tiles_count - 1]  # Exclude the blank tile
+        else:  # tile_mode == TileMode.MIXED
+            tiles = (
+                list(range(1, tiles_count // 2))  # Start from 1, excluding 0
+                + list(ascii_uppercase)[
+                    : tiles_count // 2 - 1
+                ]  # Exclude the blank tile
+            )
+        empty_tile = Tile.get_blank_tile_value(tile_mode)
+        tiles.append(empty_tile)
+        for i in range(tiles_count):
+            # Calculate the row and col of the tile
+            row, col = divmod(i, col_count)
+            # Create a new Tile and add it to the state
+            state.append(Tile(tiles[i], row, col))
+        return State(state, tile_mode, repeat_mode)
+
+    def state_to_tuple(
+        self,
+    ) -> Union[Tuple[Tuple[int, int, int], ...], Tuple[Tuple[str, int, int], ...]]:
+        return tuple(
+            (tile.val, tile.row, tile.col, tile.scale_value) for tile in self.state
+        )
 
     def deep_copy(self) -> "State":
-        return State([Tile(tile.val, tile.row, tile.col) for tile in self.state])
+        return State(
+            [
+                Tile(tile.val, tile.row, tile.col, tile.scale_value)
+                for tile in self.state
+            ],
+            self.tile_mode,
+            self.repeat_mode,
+        )
 
     def get_neighbors(
         self, side_length: int
@@ -159,7 +237,9 @@ class State:
         neighbors = []
         # Find the blank tile's position
         row, col = next(
-            (tile.row, tile.col) for tile in self.state if tile.val == Tile.blank_tile
+            (tile.row, tile.col)
+            for tile in self.state
+            if tile.val == Tile.get_blank_tile_value(self.tile_mode)
         )
         moves: Moves = Moves.moves_dict
         for move, move_enum in moves.items():

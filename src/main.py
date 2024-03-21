@@ -3,13 +3,14 @@ import tkinter as tk
 from typing import List
 from game.tiles import Tile
 from welcome import create_welcome_window
-from game.puzzle import Puzzle
+from game.puzzle import Puzzle, PuzzleSize
 import os
 from game.elements import Elements
 from game.utils import log_matrix
 import json
 import pickle
 from game.state import State
+from game.tiles import TileMode, RepeatMode
 
 # from src.mode_selection import create_mode_selection_window
 # from src.game import start_game
@@ -27,8 +28,10 @@ def main():
     # # Start with the welcome window
     # create_welcome_window(root)
 
-    puzzle: Puzzle = Puzzle(9)
-    puzzle.start(10)
+    puzzle: Puzzle = Puzzle(PuzzleSize.SMALL, TileMode.LETTERS, RepeatMode.UNIQUE)
+    # puzzle: Puzzle = Puzzle(PuzzleSize.SMALL, TileMode.NUMBERS, RepeatMode.UNIQUE)
+    # puzzle: Puzzle = Puzzle(PuzzleSize.SMALL, TileMode.MIXED, RepeatMode.UNIQUE)
+    puzzle.start(1)
 
 
 if __name__ == "__main__":
