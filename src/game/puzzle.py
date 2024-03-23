@@ -25,11 +25,13 @@ class Puzzle:
         size: PuzzleSize,
         tile_mode: TileMode = TileMode.NUMBERS,
         repeat_mode: RepeatMode = RepeatMode.UNIQUE,
+        duplicate_count: int = None,
     ):
         self.row_count: int = size.value[0]
         self.col_count: int = size.value[1]
         self.tile_mode: TileMode = tile_mode
         self.repeat_mode: RepeatMode = repeat_mode
+        self.duplicate_count: int = duplicate_count
         self.dir_path: str = None
 
     def start(
@@ -52,7 +54,7 @@ class Puzzle:
         all_states_time: str
         (all_states, solved_state), all_states_time = utils.measure_time(
             self.get_states
-        )
+        )  # todo draw solved state at beginning
         solved_states_count: int = 0
         solved_states_indices: List[int] = []
         running_times = []
@@ -62,6 +64,7 @@ class Puzzle:
                 if random_state_index not in solved_states_indices:
                     break
             start_state = all_states[random_state_index]
+            solved_states_indices.append(random_state_index)
             solver: Solver = Solver(
                 start_state,
                 random_state_index,
@@ -111,6 +114,7 @@ class Puzzle:
                 row_count=self.row_count,
                 tile_mode=self.tile_mode,
                 repeat_mode=self.repeat_mode,
+                duplicates_count=self.duplicate_count,
             )
             with open(all_states_file, "wb") as file:
                 pickle.dump((all_states, solved_state), file)

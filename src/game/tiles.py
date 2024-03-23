@@ -10,11 +10,27 @@ class Tile:
         elif tile_mode == TileMode.LETTERS:
             return " "
 
-    def __init__(self, val: int, r: int, c: int, scale_value: int):
+    def __init__(
+        self,
+        val: int,
+        r: int,
+        c: int,
+        scale_value: int,
+        duplicated: bool = False,
+        real_val: str = None,
+    ):
         self.val = val
         self.row = r
         self.col = c
         self.scale_value = scale_value
+        self.id = f"{self.row}-{self.col}"
+        if real_val:
+            self.real_val = real_val
+            if isinstance(real_val, str) and len(real_val) > 1:
+                self.duplicated = True
+        else:
+            self.real_val = f"{val}-{self.id}" if duplicated else val
+            self.duplicated = duplicated
 
     def to_dict(self):
         return {"val": self.val, "row": self.row, "col": self.col}

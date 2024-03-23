@@ -11,6 +11,7 @@ import json
 import pickle
 from game.state import State
 from game.tiles import TileMode, RepeatMode
+from collections import Counter
 
 # from src.mode_selection import create_mode_selection_window
 # from src.game import start_game
@@ -28,10 +29,13 @@ def main():
     # # Start with the welcome window
     # create_welcome_window(root)
 
-    puzzle: Puzzle = Puzzle(PuzzleSize.SMALL, TileMode.LETTERS, RepeatMode.UNIQUE)
+    puzzle: Puzzle = Puzzle(PuzzleSize.SMALL, TileMode.LETTERS, RepeatMode.REPEATED, 3)
     # puzzle: Puzzle = Puzzle(PuzzleSize.SMALL, TileMode.NUMBERS, RepeatMode.UNIQUE)
     # puzzle: Puzzle = Puzzle(PuzzleSize.SMALL, TileMode.MIXED, RepeatMode.UNIQUE)
-    puzzle.start(1)
+    puzzle.start(22000)
+
+
+# Beispiel: Generiere Permutationen mit Duplikaten
 
 
 if __name__ == "__main__":

@@ -28,7 +28,8 @@ class Solver:
         self.state_id: int = state_id
         self.board_width: int = col_count
         self.puzzle_instance: Puzzle = puzzle_instance
-        self.goal_state: State = State.state_to_tuple(goal_state)
+        self.goal_state_tuple: tuple = State.state_to_tuple(goal_state)
+        self.goal_state: State = goal_state
         self.blank_tile_value: Union[int, str] = Tile.get_blank_tile_value(
             self.puzzle_instance.tile_mode
         )
@@ -40,7 +41,7 @@ class Solver:
         while queue:
             current_state, path = queue.popleft()
             state_to_compare = current_state.state_to_tuple()
-            if state_to_compare == self.goal_state:
+            if state_to_compare == self.goal_state_tuple:
                 return path  # Found the solution
 
             self.prev_state = current_state.state_to_tuple()
@@ -65,6 +66,7 @@ class Solver:
             file.write(
                 "Original State" + "\n" + utils.write_matrix(self.start_state) + "\n"
             )
+            file.write("Goal State" + "\n" + utils.write_matrix(self.goal_state) + "\n")
             for move in solution:
                 row, col = next(
                     (tile.row, tile.col)

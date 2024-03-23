@@ -1,3 +1,4 @@
+from collections import Counter
 from itertools import permutations
 import math
 import random
@@ -68,9 +69,32 @@ class State:
             else:  # Blank on odd row from bottom
                 return inversions % 2 == 0
 
+    def perm_unique(elements):
+        def backtrack(path, counter):
+            if len(path) == len(elements):
+                yield list(path)
+                return
+            for element in counter:  # Elemente des Counters durchlaufen
+                if counter[element] > 0:
+                    path.append(element)
+                    counter[element] -= 1
+                    yield from backtrack(path, counter)
+                    path.pop()  # Letztes Element entfernen und Counter zurücksetzen
+                    counter[element] += 1
+
+        return backtrack([], Counter(elements))
+
+    @staticmethod
+    def state_to_hash(state: List[Tile]) -> str:
+        return "-".join(str(tile.val) for tile in state)
+
     @staticmethod
     def generate_all_states(
-        col_count: int, row_count: int, tile_mode: TileMode, repeat_mode: RepeatMode
+        col_count: int,
+        row_count: int,
+        tile_mode: TileMode,
+        repeat_mode: RepeatMode,
+        duplicates_count: int = 0,
     ) -> Tuple[List[List[Tile]], List[Tile]]:
         all_states: List[State] = []
         size: int = col_count * row_count
@@ -82,37 +106,71 @@ class State:
             tiles = list(ascii_uppercase)[: size - 1] + [blank_tile_value]
         else:  # tile_mode == TileMode.MIXED
             tiles = (
-                list(range(1, size // 2))
-                + list(ascii_uppercase)[: size // 2 - 1]
+                list(range(1, size // 2 + 1))
+                + list(ascii_uppercase)[: size // 2]
                 + [blank_tile_value]
             )
+        if repeat_mode == RepeatMode.REPEATED:
+            if duplicates_count == 0:
+                duplicates_count = size // 2
+            duplicates = [
+                random.choice([tile for tile in tiles if tile != blank_tile_value])
+                for _ in range(duplicates_count)
+            ]
 
+            for i in range(duplicates_count):
+                replace_index = random.choice(
+                    [
+                        i
+                        for i in range(len(tiles))
+                        if tiles[i] != blank_tile_value and tiles[i] not in duplicates
+                    ]
+                )
+                tiles[replace_index] = duplicates[i]
         # Generate solved state
         solved_state = []
+        appended_tiles = []
         for i, value in enumerate(tiles):
             row, col = divmod(i, col_count)
             scale_value = i + 1
-            solved_state.append(Tile(value, row, col, scale_value))
+            duplicated: bool = value in appended_tiles
+            solved_state.append(Tile(value, row, col, scale_value, duplicated))
+            appended_tiles.append(value)
         solved_state = State(solved_state, tile_mode, repeat_mode)
-        scale_values = {tile.val: tile.scale_value for tile in solved_state.state}
+        tiles = [tile.real_val for tile in solved_state.state]
+        scale_values = {tile.real_val: tile.scale_value for tile in solved_state.state}
+        seen_hashes = set()
         # Generate all states
         for perm in permutations(tiles):
             state = []
             blank_row = None
             state_to_check = []
-            for i, value in enumerate(perm):
+            for i, real_value in enumerate(perm):
                 row, col = divmod(i, col_count)
+                value = (
+                    real_value.split("-")[0]
+                    if isinstance(real_value, str)
+                    else real_value
+                )
+                if isinstance(value, str) and value.isdigit():
+                    value = int(value)
+
                 tile = Tile(
                     value,
                     row,
                     col,
-                    scale_values[value],
+                    scale_values[real_value],
+                    real_val=real_value,
                 )
                 state.append(tile)
                 if tile.val != blank_tile_value:
                     state_to_check.append(tile)
                 else:
                     blank_row = tile.row
+            hash_value = State.state_to_hash(state)
+            if hash_value in seen_hashes:
+                continue
+            seen_hashes.add(hash_value)
             if State.state_is_solvable(state_to_check, blank_row, col_count):
                 all_states.append(State(state, tile_mode, repeat_mode))
 
