@@ -1,0 +1,3 @@
+All states (181440) generation/retrieval time: 14.59 seconds
+Running time for 58473: 3.41 seconds
+1 from 1 puzzles solved in 18.36 seconds

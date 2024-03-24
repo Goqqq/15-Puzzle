@@ -1,4 +1,5 @@
 import math
+from multiprocessing import Pool, cpu_count
 import os
 import pickle
 import random
@@ -33,11 +34,35 @@ class Puzzle:
         self.repeat_mode: RepeatMode = repeat_mode
         self.duplicate_count: int = duplicate_count
         self.dir_path: str = None
+        self.solved_states_count: int = 0
+        self.running_times = []
+        self.to_solve_count: int = None
+
+    def solve_puzzle(args):
+        start_state, random_state_index, puzzle, col_count, row_count, solved_state = (
+            args
+        )
+        solver = Solver(
+            start_state, random_state_index, puzzle, col_count, row_count, solved_state
+        )
+        solution, running_time = utils.measure_time(solver.solve)
+        if solution:
+            solver.apply_solution_and_draw(solution)
+            # return solution, running_time
+            # self.solved_states_count += 1
+            # self.running_times.append(
+            #     f"Running time for {random_state_index}: {running_time} seconds"
+            # )
+            return random_state_index, running_time
+        else:
+            # print("No solution found for:" + "\n" + utils.write_matrix(start_state))
+            return None, running_time
 
     def start(
         self,
         to_solve_count: int,
     ):
+        self.to_solve_count = to_solve_count
         cumulative_start_time: time = time.time()
         now = datetime.now()
         timestamp_str = now.strftime("%Y%m%d_%H%M%S")
@@ -54,10 +79,10 @@ class Puzzle:
         all_states_time: str
         (all_states, solved_state), all_states_time = utils.measure_time(
             self.get_states
-        )  # todo draw solved state at beginning
-        solved_states_count: int = 0
+        )
         solved_states_indices: List[int] = []
-        running_times = []
+
+        args_list = []
         for i in range(to_solve_count):
             while True:
                 random_state_index = random.randint(0, len(all_states) - 1)
@@ -65,27 +90,47 @@ class Puzzle:
                     break
             start_state = all_states[random_state_index]
             solved_states_indices.append(random_state_index)
-            solver: Solver = Solver(
-                start_state,
-                random_state_index,
-                self,
-                self.col_count,
-                self.row_count,
-                solved_state,
+            args_list.append(
+                (
+                    start_state,
+                    random_state_index,
+                    self,
+                    self.col_count,
+                    self.row_count,
+                    solved_state,
+                )
             )
-            (solution, running_time) = utils.measure_time(solver.solve)
-            if solution:
-                solver.apply_solution_and_draw(solution)
-                solved_states_count += 1
-                # print("Solution found!")
-                # print(solution)
-            else:
-                print("No solution found for:" + "\n" + utils.write_matrix(start_state))
+            # solver: Solver = Solver(
+            #     start_state,
+            #     random_state_index,
+            #     self,
+            #     self.col_count,
+            #     self.row_count,
+            #     solved_state,
+            # )
+            # (solution, running_time) = utils.measure_time(solver.solve)
+            # if solution:
+            #     solver.apply_solution_and_draw(solution)
+            #     solved_states_count += 1
+            #     # print("Solution found!")
+            #     # print(solution)
+            # else:
+            #     print("No solution found for:" + "\n" + utils.write_matrix(start_state))
 
-            running_times.append(
-                f"Running time for {random_state_index}: {running_time} seconds"
-            )
-            print(f"Processed {i + 1} puzzles out of {to_solve_count}")
+            # running_times.append(
+            #     f"Running time for {random_state_index}: {running_time} seconds"
+            # )
+        with Pool(cpu_count()) as pool:
+            results = pool.map(Puzzle.solve_puzzle, args_list)
+        solved_states_count: int = 0
+        running_times: List[str] = []
+        for result in results:
+            result_index, result_time = result
+            if result_index is not None:
+                solved_states_count += 1
+                running_times.append(
+                    f"Running time for {result_index}: {result_time} seconds"
+                )
         cumulative_end_time: time = time.time()
         with open(f"{self.dir_path}/run_stats.txt", "a") as file:
             file.write(
@@ -103,7 +148,7 @@ class Puzzle:
         all_states_file = os.path.join(
             assets_path,
             "states",
-            f"all_states_{self.tile_mode.value}_{self.repeat_mode.value}.pkl",
+            f"all_states_{self.col_count * self.row_count}_{self.tile_mode.value}_{self.repeat_mode.value}.pkl",
         )
         if os.path.exists(all_states_file):
             with open(all_states_file, "rb") as file:
