@@ -1,8 +1,6 @@
 import math
-from typing import List
 from game.state import State
 import time
-from game.tiles import Tile
 
 
 def build_matrix_string(state: State) -> str:
@@ -36,5 +34,4 @@ def measure_time(func, *args, **kwargs) -> tuple:
     result = func(*args, **kwargs)
     end_time = time.time()
     time_taken: str = f"{end_time - start_time:.2f}"
-    # print(f"Time taken by {func.__name__}: {end_time - start_time:.2f} seconds")
     return result, time_taken

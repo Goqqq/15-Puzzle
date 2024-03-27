@@ -32,13 +32,6 @@ class Tile:
             self.real_val = f"{val}-{self.id}" if duplicated else val
             self.duplicated = duplicated
 
-    def to_dict(self):
-        return {"val": self.val, "row": self.row, "col": self.col}
-
-    @classmethod
-    def from_dict(cls, data):
-        return cls(data["val"], data["row"], data["col"])
-
 
 class TileMode(Enum):
     NUMBERS = "numbers"
@@ -46,6 +39,6 @@ class TileMode(Enum):
     MIXED = "mixed"
 
 
-class RepeatMode(Enum):
-    REPEATED = "repeated"
+class DuplicationMode(Enum):
+    DUPLICATED = "duplicated"
     UNIQUE = "unique"

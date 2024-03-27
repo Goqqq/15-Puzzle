@@ -1,9 +1,12 @@
-from typing import List
-from game.tiles import Tile
 from enum import Enum
 
 
 class MovesEnum(Enum):
+    """
+    Enum class representing the possible moves in the game.
+    Each move is associated with a tuple of (row, column) offsets.
+    """
+
     UP = (-1, 0)
     DOWN = (1, 0)
     LEFT = (0, -1)
@@ -11,18 +14,13 @@ class MovesEnum(Enum):
 
 
 class Moves:
+    """
+    Class representing the available moves in the game.
+    """
+
     moves_dict = {
         "up": MovesEnum.UP,
         "down": MovesEnum.DOWN,
         "left": MovesEnum.LEFT,
         "right": MovesEnum.RIGHT,
     }
-
-
-# def move_up(self, state: List[Tile], blank_index: int) -> List[Tile]:
-#     target_index = blank_index - self.width
-#     state[blank_index], state[target_index] = (
-#         state[target_index],
-#         state[blank_index],
-#     )
-#     return state

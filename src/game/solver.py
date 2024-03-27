@@ -1,8 +1,4 @@
 from collections import deque
-import copy
-from itertools import chain
-import math
-import random
 from typing import List, Tuple, Optional, Set, Deque, Union
 from game import utils
 from game.tiles import Tile
@@ -21,7 +17,6 @@ class Solver:
         state_id: int,
         puzzle_instance: "Puzzle",
         col_count: int,
-        row_count: int,
         goal_state: State,
     ):
         self.start_state: State = start_state
@@ -80,7 +75,5 @@ class Solver:
                 blank_index: int = solved_state.get_blank_tile_index()
                 target_index: int = solved_state.get_target_tile_index(new_row, new_col)
                 solved_state.update_state(blank_index, target_index, new_row, new_col)
-                # print(f"Move: {move}")
                 file.write(f"Move: {move}\n")
-                # utils.log_matrix(solved_state)
                 file.write(utils.write_matrix(solved_state) + "\n")

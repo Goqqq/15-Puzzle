@@ -1,9 +1,8 @@
 from collections import Counter
 from itertools import permutations
-import math
 import random
 from string import ascii_uppercase
-from game.tiles import Tile, TileMode, RepeatMode
+from game.tiles import Tile, TileMode, DuplicationMode
 from typing import List, Tuple, Union
 from game.moves import Moves
 
@@ -13,7 +12,7 @@ class State:
         self,
         tiles: List[Tile],
         tile_mode: TileMode = TileMode.NUMBERS,
-        repeat_mode: RepeatMode = RepeatMode.UNIQUE,
+        repeat_mode: DuplicationMode = DuplicationMode.UNIQUE,
     ):
         self.moves: Moves = Moves()
         self.state: List[Tile] = tiles
@@ -69,17 +68,19 @@ class State:
             else:  # Blank on odd row from bottom
                 return inversions % 2 == 0
 
-    def perm_unique(elements):
+    def perm_unique(
+        elements,
+    ):  # Currently not used (alternative to itertools.permutations)
         def backtrack(path, counter):
             if len(path) == len(elements):
                 yield list(path)
                 return
-            for element in counter:  # Elemente des Counters durchlaufen
+            for element in counter:
                 if counter[element] > 0:
                     path.append(element)
                     counter[element] -= 1
                     yield from backtrack(path, counter)
-                    path.pop()  # Letztes Element entfernen und Counter zurücksetzen
+                    path.pop()
                     counter[element] += 1
 
         return backtrack([], Counter(elements))
@@ -93,7 +94,7 @@ class State:
         col_count: int,
         row_count: int,
         tile_mode: TileMode,
-        repeat_mode: RepeatMode,
+        repeat_mode: DuplicationMode,
         duplicates_count: int = 0,
     ) -> Tuple[List[List[Tile]], List[Tile]]:
         all_states: List[State] = []
@@ -110,13 +111,15 @@ class State:
                 + list(ascii_uppercase)[: size // 2]
                 + [blank_tile_value]
             )
-        if repeat_mode == RepeatMode.REPEATED:
-            if duplicates_count == 0:
-                duplicates_count = size // 2
-            duplicates = [
-                random.choice([tile for tile in tiles if tile != blank_tile_value])
-                for _ in range(duplicates_count)
-            ]
+        if repeat_mode == DuplicationMode.DUPLICATED:
+            if duplicates_count == 0 or duplicates_count > size // 2:
+                print(
+                    "Duplicate count must be between 1 and size // 2. Defaulting to 2 duplicates"
+                )
+                duplicates_count = 2
+            duplicates = random.sample(
+                [tile for tile in tiles if tile != blank_tile_value], duplicates_count
+            )
 
             for i in range(duplicates_count):
                 replace_index = random.choice(
@@ -231,46 +234,6 @@ class State:
             movesCount -= 1
 
         return state
-
-    # deprecated
-    @staticmethod
-    def generate_goal_state(side_length: int) -> "State":
-        return [
-            Tile(
-                0 if i == j == side_length - 1 else side_length * i + j + 1,
-                i,
-                j,
-            )
-            for i in range(side_length)
-            for j in range(side_length)
-        ]
-
-    # deprecated
-    @staticmethod
-    def generate_solved_state(
-        row_count: int, col_count: int, tile_mode: TileMode, repeat_mode: RepeatMode
-    ) -> "State":
-        tiles_count: int = row_count * col_count
-        state = []
-        if tile_mode == TileMode.NUMBERS:
-            tiles = list(range(1, tiles_count))  # Start from 1, excluding 0
-        elif tile_mode == TileMode.LETTERS:
-            tiles = list(ascii_uppercase)[: tiles_count - 1]  # Exclude the blank tile
-        else:  # tile_mode == TileMode.MIXED
-            tiles = (
-                list(range(1, tiles_count // 2))  # Start from 1, excluding 0
-                + list(ascii_uppercase)[
-                    : tiles_count // 2 - 1
-                ]  # Exclude the blank tile
-            )
-        empty_tile = Tile.get_blank_tile_value(tile_mode)
-        tiles.append(empty_tile)
-        for i in range(tiles_count):
-            # Calculate the row and col of the tile
-            row, col = divmod(i, col_count)
-            # Create a new Tile and add it to the state
-            state.append(Tile(tiles[i], row, col))
-        return State(state, tile_mode, repeat_mode)
 
     def state_to_tuple(
         self,
