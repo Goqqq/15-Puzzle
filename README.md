@@ -21,7 +21,7 @@ Vor der Installation stellen Sie sicher, dass Python 3.8 oder höher auf Ihrem S
 1. Klonen Sie das Repository:
 
 ```bash
-git clone https://github.com/IhrBenutzername/puzzle-solver.git
+git clone https://github.com/Goqqq/15-Puzzle.git
 ```
 
 ## Anwendung starten
