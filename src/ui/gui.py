@@ -26,7 +26,7 @@ class Gui:
         )
 
         # Load the welcome image
-        welcome_image = os.path.join(assets_path, "Welcome.png")
+        welcome_image = os.path.join(assets_path, "Welcome_15_cropped.png")
         bg_image = tk.PhotoImage(file=welcome_image)
         bg_label = tk.Label(root, image=bg_image)
         bg_label.place(relwidth=1, relheight=1)
@@ -66,7 +66,7 @@ class Gui:
 
         # Create a label for the puzzle size
         size_label = ttk.Label(root, text="Select Puzzle Size:", style="TLabel")
-        size_label.place(relx=0.36, rely=0.34, anchor="e")
+        size_label.place(relx=0.382, rely=0.34, anchor="e")
 
         # Create a combobox for the puzzle size
         size_options = ttk.Combobox(root, textvariable=size_var)
@@ -83,7 +83,7 @@ class Gui:
         solution_count_label = ttk.Label(
             root, text="Enter Solution Count:", style="TLabel"
         )
-        solution_count_label.place(relx=0.376, rely=0.54, anchor="e")
+        solution_count_label.place(relx=0.38, rely=0.54, anchor="e")
 
         # Create an entry for the solution count
         solution_count_entry = ttk.Entry(root, textvariable=solution_count_var)
@@ -91,7 +91,7 @@ class Gui:
 
         # Create a label for the tile mode
         tile_label = ttk.Label(root, text="Select Tile Mode:", style="TLabel")
-        tile_label.place(relx=0.82, rely=0.34, anchor="e")
+        tile_label.place(relx=0.83, rely=0.34, anchor="e")
 
         # Create a combobox for the tile mode
         tile_options = ttk.Combobox(
@@ -113,7 +113,7 @@ class Gui:
             background="lightgrey",
             style="TLabel",
         )
-        dup_label.place(relx=0.86, rely=0.54, anchor="e")
+        dup_label.place(relx=0.87, rely=0.54, anchor="e")
 
         # Create a combobox for the duplication mode
         dup_options = ttk.Combobox(root, textvariable=dup_var)
@@ -331,7 +331,7 @@ class Gui:
         # If the selected duplication mode is DUPLICATED, show the duplicate count field
         if dup_var.get() == DuplicationMode.DUPLICATED.name:
             # Define the duplicate count label and entry positions
-            dup_count_label.place(relx=0.84, rely=0.7, anchor="e")
+            dup_count_label.place(relx=0.85, rely=0.7, anchor="e")
             dup_count_entry.place(relx=0.84, rely=0.76, anchor="e")
         else:
             # Hide the duplicate count label and entry if the duplication mode is UNIQUE

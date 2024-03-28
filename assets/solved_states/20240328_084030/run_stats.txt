@@ -1,0 +1,9 @@
+All states (181440) generation/retrieval time: 13.55 seconds
+States to solve: 1
+Puzzle size: 3x3
+Tile mode: numbers
+Duplication mode: unique
+--------------------------------------------------
+Running time for 129116: 11.95 seconds
+1 from 1 puzzles solved in 12.93 seconds
+Programm total running time: 26.49 seconds
