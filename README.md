@@ -1,4 +1,3 @@
-"""
 Puzzle Solver Projekt
 =====================
 
