@@ -198,11 +198,14 @@ class Puzzle:
         if self.duplicate_count and self.duplicate_count > 0 and self.duplication_mode.value == DuplicationMode.DUPLICATED.value:
             file_name_extension = f"({self.duplicate_count})"
         # Generate a file name for the all states file
+        states_path = os.path.join(assets_path, "states")
         all_states_file = os.path.join(
-            assets_path,
-            "states",
+            states_path,
             f"all_states_{self.col_count * self.row_count}_{self.tile_mode.value}_{self.duplication_mode.value}{file_name_extension}.pkl",
         )
+        # Check if the states directory exists, if not, create it
+        if not os.path.exists(states_path):
+            os.makedirs(states_path)
         # Check if the all states file exists
         # If it exists, load the all states and solved state from the file
         # If it does not exist, generate all states and the solved state
