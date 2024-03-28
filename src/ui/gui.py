@@ -12,8 +12,20 @@ from api import (
 
 
 class Gui:
-
+    @staticmethod
     def run_gui():
+        """
+        Run the graphical user interface (GUI) for the application.
+
+        This function creates the main window, configures its size and properties,
+        loads images, creates labels and entry fields, and runs the main loop of the GUI.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
         # Create the main window
         root = tk.Tk()
 
@@ -38,18 +50,12 @@ class Gui:
         # Declare global variables
         global solution_count_var
         solution_count_var = tk.StringVar()
-        # Add a trace to the solution count variable
-        # solution_count_var.trace_add("write")
 
         global size_var
         size_var = tk.StringVar()
-        # Add a trace to the puzzle size variable
-        # size_var.trace_add("write")
 
         global tile_var
         tile_var = tk.StringVar()
-        # Add a trace to the tile mode variable
-        # tile_var.trace_add("write")
 
         global dup_var
         dup_var = tk.StringVar()
@@ -58,8 +64,7 @@ class Gui:
 
         global dup_count_var
         dup_count_var = tk.StringVar()
-        # Add a trace to the duplicate count variable
-        # dup_count_var.trace_add("write")
+        
         global dup_count_entry
         global dup_count_label
         global submit_button

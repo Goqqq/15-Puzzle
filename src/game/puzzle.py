@@ -6,7 +6,7 @@ from typing import List
 from game.tiles import TileMode, DuplicationMode
 from game.state import State
 from game.solver import Solver
-from game import utils
+from game.utils import PuzzleUtils as utils
 import os
 from datetime import datetime
 import time
@@ -195,7 +195,7 @@ class Puzzle:
         assets_path = os.path.join(dir_of_script, os.pardir, os.pardir, "assets")
         file_name_extension: str = ""
         # Generate a file name extension if there are duplicates including the number of duplicates
-        if self.duplicate_count and self.duplicate_count > 0:
+        if self.duplicate_count and self.duplicate_count > 0 and self.duplication_mode.value == DuplicationMode.DUPLICATE.value:
             file_name_extension = f"({self.duplicate_count})"
         # Generate a file name for the all states file
         all_states_file = os.path.join(

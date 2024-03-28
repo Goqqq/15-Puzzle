@@ -1,6 +1,6 @@
 from collections import deque
 from typing import List, Tuple, Optional, Set, Deque, Union
-from game import utils
+from game.utils import PuzzleUtils as utils
 from game.tiles import Tile
 from game.state import State
 from game.moves import Moves
